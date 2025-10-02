@@ -98,7 +98,7 @@ app.add_handler(conv_handler)
 
 # Установка webhook
 async def set_webhook():
-    await app.bot.set_webhook(f"{WEBHOOK_URL}{8297829595:AAEIXmOZrjkDOSFJ8LTZnRqJWoIxmNEgXZA}")
+    await app.bot.set_webhook(f"{WEBHOOK_URL}{8297829595:AAEmP7iPYmC0geW4I-kl08cDR6HxTdixKNA}")
     print("Webhook установлен!")
 
 asyncio.run(set_webhook())
