@@ -1,23 +1,33 @@
+import os
+import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, CallbackQueryHandler, ConversationHandler, filters
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    CallbackQueryHandler,
+    ConversationHandler,
+    filters
+)
 
+# Состояния
 WEIGHT, DEFICIT = range(2)
 
-# Старт
+# --- Обработчики ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Привет! Введи свой вес в кг:")
+    await update.message.reply_text("Привет! Введите ваш вес в кг:")
     return WEIGHT
 
-# Ввод веса
 async def weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         weight = float(update.message.text)
         context.user_data['weight'] = weight
 
         keyboard = [
-            [InlineKeyboardButton("Быстрое похудение", callback_data='30')],
-            [InlineKeyboardButton("Умеренное", callback_data='20')],
-            [InlineKeyboardButton("Комфортное", callback_data='10')]
+            [InlineKeyboardButton("Быстрое похудение (−30%)", callback_data='30')],
+            [InlineKeyboardButton("Умеренное (−20%)", callback_data='20')],
+            [InlineKeyboardButton("Комфортное (−10%)", callback_data='10')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text("Выберите тип дефицита:", reply_markup=reply_markup)
@@ -26,7 +36,6 @@ async def weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Пожалуйста, введите число для веса.")
         return WEIGHT
 
-# Расчет БЖУ
 async def deficit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -44,7 +53,6 @@ async def deficit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     carbs_new = ((calories_target - protein*4) * carb_fat_ratio) / 4
     fat_new = ((calories_target - protein*4) * (1 - carb_fat_ratio)) / 9
 
-    # Кнопка для нового расчета
     keyboard = [[InlineKeyboardButton("Новый расчет", callback_data='restart')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -55,29 +63,24 @@ async def deficit(update: Update, context: ContextTypes.DEFAULT_TYPE):
                f"Жиры: {fat_new:.1f} г"
 
     await query.edit_message_text(response, reply_markup=reply_markup)
-    return DEFICIT  # важно не завершать разговор, чтобы кнопка работала
+    return DEFICIT
 
-# Обработка нового расчета
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     await query.edit_message_text("Введите ваш вес в кг:")
     return WEIGHT
 
-# Отмена
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Расчет отменен.")
     return ConversationHandler.END
 
-# Настройка бота
-import os
-from telegram import Bot
+# --- Основная часть ---
+TOKEN = os.environ.get("8297829595:AAEIXmOZrjkDOSFJ8LTZnRqJWoIxmNEgXZA")
+PORT = int(os.environ.get("PORT", 5000))
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL")  # https://tg-deficit-bot.onrender.com
 
-# Получаем токен из переменной окружения
-TOKEN = os.getenv("BOT_TOKEN")
-
-bot = Bot(token=TOKEN)
-
+app = ApplicationBuilder().token(TOKEN).build()
 
 conv_handler = ConversationHandler(
     entry_points=[CommandHandler('start', start)],
@@ -92,4 +95,18 @@ conv_handler = ConversationHandler(
 )
 
 app.add_handler(conv_handler)
-app.run_polling()
+
+# Установка webhook
+async def set_webhook():
+    await app.bot.set_webhook(f"{WEBHOOK_URL}{TOKEN}")
+    print("Webhook установлен!")
+
+asyncio.run(set_webhook())
+
+# Запуск веб-сервера на Render
+app.run_webhook(
+    listen="0.0.0.0",
+    port=PORT,
+    url_path=TOKEN,
+    webhook_url=f"{WEBHOOK_URL}{TOKEN}"
+)
