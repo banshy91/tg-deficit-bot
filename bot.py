@@ -70,7 +70,14 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 # Настройка бота
-app = ApplicationBuilder().token("8297829595:AAEIXmOZrjkDOSFJ8LTZnRqJWoIxmNEgXZA").build()
+import os
+from telegram import Bot
+
+# Получаем токен из переменной окружения
+TOKEN = os.getenv("BOT_TOKEN")
+
+bot = Bot(token=TOKEN)
+
 
 conv_handler = ConversationHandler(
     entry_points=[CommandHandler('start', start)],
