@@ -78,7 +78,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # --- Основная часть ---
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 PORT = int(os.environ.get("PORT", 5000))
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL")  # https://tg-deficit-bot.onrender.com
+WEBHOOK_URL = os.environ.get("https://tg-deficit-bot.onrender.com")  # https://tg-deficit-bot.onrender.com
 
 app = ApplicationBuilder().token(TOKEN).build()
 
@@ -98,7 +98,7 @@ app.add_handler(conv_handler)
 
 # Установка webhook
 async def set_webhook():
-    await app.bot.set_webhook(f"{WEBHOOK_URL}{TOKEN}")
+    await app.bot.set_webhook(f"{WEBHOOK_URL}{8297829595:AAEIXmOZrjkDOSFJ8LTZnRqJWoIxmNEgXZA}")
     print("Webhook установлен!")
 
 asyncio.run(set_webhook())
