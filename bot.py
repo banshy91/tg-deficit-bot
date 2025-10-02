@@ -76,7 +76,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 # --- Основная часть ---
-TOKEN = os.environ.get("8297829595:AAEIXmOZrjkDOSFJ8LTZnRqJWoIxmNEgXZA")
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
 PORT = int(os.environ.get("PORT", 5000))
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")  # https://tg-deficit-bot.onrender.com
 
